@@ -16,11 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -49,7 +53,11 @@ fun MovieListScreen(
 ) {
 
     TestMoviesAppTheme {
-        Scaffold(topBar = { MovieTopAppBar() }, modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Scaffold(
+            topBar = { MovieTopAppBar() },
+            bottomBar = { BottomNavigationBar(viewModel = viewModel) },
+            modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
             MovieListUi(
                 viewModel = viewModel,
                 navigator = navController,
@@ -71,6 +79,36 @@ fun MovieTopAppBar() {
         title = { Text(text = stringResource(id = R.string.app_name)) },
         modifier = Modifier.fillMaxWidth()
     )
+}
+
+@Composable
+fun BottomNavigationBar(viewModel: MovieListViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    NavigationBar {
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    Icons.Filled.Home,
+                    contentDescription = stringResource(R.string.home)
+                )
+            },
+            label = { Text(stringResource(R.string.home)) },
+            selected = uiState.selectedListId == 1,
+            onClick = { viewModel.updateSelectedList(1) }
+        )
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    Icons.Filled.Favorite,
+                    contentDescription = stringResource(R.string.favorite)
+                )
+            },
+            label = { Text(stringResource(R.string.favorite)) },
+            selected = uiState.selectedListId == 2,
+            onClick = { viewModel.updateSelectedList(2) }
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

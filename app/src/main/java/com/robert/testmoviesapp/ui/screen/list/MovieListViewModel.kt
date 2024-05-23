@@ -37,6 +37,12 @@ class MovieListViewModel @Inject constructor(
         }
     }
 
+    fun updateSelectedList(id: Int) {
+        _uiState.update {
+            it.copy(selectedListId = id)
+        }
+    }
+
     private fun getMovies(): MovieListResponse {
         val jsonString = Utils.readJsonFromAssets(context, "movie_list.json")
         val movieListResponse = Utils.parseJsonToMovieList(jsonString)
