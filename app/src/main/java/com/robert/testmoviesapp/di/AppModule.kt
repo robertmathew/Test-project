@@ -1,7 +1,8 @@
 package com.robert.testmoviesapp.di
 
+import com.robert.testmoviesapp.data.local.CommentDao
 import com.robert.testmoviesapp.data.local.FavoriteDao
-import com.robert.testmoviesapp.repository.FavoriteRepository
+import com.robert.testmoviesapp.repository.MovieRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,8 +15,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideFavoriteRepository(favoriteDao: FavoriteDao): FavoriteRepository {
-        return FavoriteRepository(favoriteDao)
+    fun provideMovieRepository(favoriteDao: FavoriteDao, commentDao: CommentDao): MovieRepository {
+        return MovieRepository(favoriteDao, commentDao)
     }
 
 }

@@ -1,15 +1,12 @@
 package com.robert.testmoviesapp.ui.screen.list
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.robert.testmoviesapp.Utils
 import com.robert.testmoviesapp.data.local.Favorite
 import com.robert.testmoviesapp.data.model.MovieListResponse
-import com.robert.testmoviesapp.repository.FavoriteRepository
+import com.robert.testmoviesapp.repository.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MovieListViewModel @Inject constructor(
     private val context: Application,
-    private val favoriteRepository: FavoriteRepository
+    private val movieRepository: MovieRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieListUiState())
@@ -60,9 +57,9 @@ class MovieListViewModel @Inject constructor(
     }
 
     private fun getFavoriteMovies(movieList: MovieListResponse): MovieListResponse {
-        favoriteRepository.getAllMovies()
+        movieRepository.getAllMovies()
 
-        val favoriteMovieIds: List<Favorite> = favoriteRepository.allFavorites.value ?: emptyList()
+        val favoriteMovieIds: List<Favorite> = movieRepository.allFavorites.value ?: emptyList()
         val favoriteMovies = movieList.copy(results = movieList.results.filter { movie -> movie.id in favoriteMovieIds.map { it.id } })
 
         return favoriteMovies

@@ -4,13 +4,16 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robert.testmoviesapp.Utils
+import com.robert.testmoviesapp.data.local.Comment
 import com.robert.testmoviesapp.data.local.Favorite
 import com.robert.testmoviesapp.data.model.MovieListResponse
-import com.robert.testmoviesapp.repository.FavoriteRepository
+import com.robert.testmoviesapp.repository.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,11 +21,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     private val context: Application,
-    private val favoriteRepository: FavoriteRepository
+    private val movieRepository: MovieRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieDetailUiState())
     val uiState = _uiState.asStateFlow()
+
+    val comments: Flow<List<Comment>> = movieRepository._allComments
 
     fun getMovieDetail(movieId: Int) {
         viewModelScope.launch(Dispatchers.Main) {
@@ -45,17 +50,17 @@ class MovieDetailViewModel @Inject constructor(
     }
 
     fun addToFavorite(movieId: Int) {
-        favoriteRepository.addMovie(movieId)
+        movieRepository.addMovie(movieId)
     }
 
     fun removeFromFavorite(movieId: Int) {
-        favoriteRepository.deleteMovie(movieId)
+        movieRepository.deleteMovie(movieId)
     }
 
     fun isMovieFavorite(movieId: Int) {
-        favoriteRepository.getAllMovies()
+        movieRepository.getAllMovies()
 
-        val favoriteMovies: List<Favorite> = favoriteRepository.allFavorites.value ?: emptyList()
+        val favoriteMovies: List<Favorite> = movieRepository.allFavorites.value ?: emptyList()
 
         val isFavorite = favoriteMovies.any { it.id == movieId }
         _uiState.update {
@@ -68,6 +73,20 @@ class MovieDetailViewModel @Inject constructor(
         val movieListResponse: MovieListResponse = Utils.parseJsonToMovieList(jsonString)
         val movies = movieListResponse.results.find { it.id == movieId }
         return movies!!
+    }
+
+    fun addComment(movieId: Int, comment: String) {
+        movieRepository.addComment(movieId, comment)
+
+        getComments(movieId)
+    }
+
+    fun getComments(movieId: Int) {
+        movieRepository.getCommentsByMovieId(movieId)
+
+        _uiState.update {
+            it.copy(comments = movieRepository._allComments.value)
+        }
     }
 
 }
