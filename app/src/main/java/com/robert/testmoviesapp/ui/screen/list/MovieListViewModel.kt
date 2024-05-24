@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.robert.testmoviesapp.Utils
-import com.robert.testmoviesapp.model.MovieListResponse
+import com.robert.testmoviesapp.data.local.Favorite
+import com.robert.testmoviesapp.data.model.MovieListResponse
+import com.robert.testmoviesapp.repository.FavoriteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,21 +20,27 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MovieListViewModel @Inject constructor(
-    private val context: Application
+    private val context: Application,
+    private val favoriteRepository: FavoriteRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieListUiState())
     val uiState = _uiState.asStateFlow()
 
-    init {
-        getMovieList()
-    }
-
     fun getMovieList() {
         viewModelScope.launch(Dispatchers.Main) {
             val movies = getMovies()
-            _uiState.update {
-                it.copy(movieList = movies)
+
+            val favoriteMovies = getFavoriteMovies(movies)
+
+            if (_uiState.value.selectedListId == 2) {
+                _uiState.update {
+                    it.copy(movieList = favoriteMovies)
+                }
+            } else {
+                _uiState.update {
+                    it.copy(movieList = movies)
+                }
             }
         }
     }
@@ -41,6 +49,7 @@ class MovieListViewModel @Inject constructor(
         _uiState.update {
             it.copy(selectedListId = id)
         }
+        getMovieList()
     }
 
     private fun getMovies(): MovieListResponse {
@@ -50,6 +59,13 @@ class MovieListViewModel @Inject constructor(
         return movieListResponse
     }
 
+    private fun getFavoriteMovies(movieList: MovieListResponse): MovieListResponse {
+        favoriteRepository.getAllMovies()
 
+        val favoriteMovieIds: List<Favorite> = favoriteRepository.allFavorites.value ?: emptyList()
+        val favoriteMovies = movieList.copy(results = movieList.results.filter { movie -> movie.id in favoriteMovieIds.map { it.id } })
+
+        return favoriteMovies
+    }
 
 }

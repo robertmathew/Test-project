@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.robert.testmoviesapp.model.MovieListResponse
+import com.robert.testmoviesapp.data.model.MovieListResponse
 
 @Composable
 fun PosterCard(

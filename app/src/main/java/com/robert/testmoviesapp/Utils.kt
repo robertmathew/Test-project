@@ -3,7 +3,7 @@ package com.robert.testmoviesapp
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.robert.testmoviesapp.model.MovieListResponse
+import com.robert.testmoviesapp.data.model.MovieListResponse
 
 object Utils {
 

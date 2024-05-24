@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -16,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,12 +41,40 @@ fun MovieDetailScreen(
 ) {
 
     viewModel.getMovieDetail(movieId)
+    viewModel.isMovieFavorite(movieId)
 
     TestMoviesAppTheme {
-        Scaffold(topBar = {
-            ShowDetailsAppBar(title = movieName, onNavigateUp = { navController.popBackStack() })
-        }) { innerPaddingValues ->
+        Scaffold(
+            topBar = {
+                ShowDetailsAppBar(
+                    title = movieName,
+                    onNavigateUp = { navController.popBackStack() },
+                )
+            },
+            floatingActionButton = { Fab(viewModel = viewModel, movieId = movieId) },
+        )
+        { innerPaddingValues ->
             MovieDetail(viewModel = viewModel, modifier = Modifier.padding(innerPaddingValues))
+        }
+    }
+}
+
+@Composable
+private fun Fab(viewModel: MovieDetailViewModel, movieId: Int) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    FloatingActionButton(
+        onClick = {
+            viewModel.updateFavoriteStatus(uiState.isMovieFavorite.not())
+        },
+    ) {
+        if (uiState.isMovieFavorite) {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = "remove"
+            )
+        } else {
+            Icon(imageVector = Icons.Filled.FavoriteBorder, contentDescription = "add")
         }
     }
 }
@@ -71,7 +103,6 @@ private fun ShowDetailsAppBar(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
             scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
         ),
-
         modifier = modifier,
     )
 }
@@ -79,7 +110,7 @@ private fun ShowDetailsAppBar(
 @Composable
 private fun MovieDetail(
     viewModel: MovieDetailViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -95,7 +126,7 @@ private fun MovieDetail(
             Text(
                 text = "Rating: " + uiState.movieDetail?.voteAverage.toString() + " / 10" + " (" + uiState.movieDetail?.voteCount + ")",
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
             )
 
             if (uiState.movieDetail?.overview.isNullOrEmpty().not()) {
@@ -103,18 +134,18 @@ private fun MovieDetail(
                     text = stringResource(R.string.description),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
                 )
                 Text(
                     uiState.movieDetail?.overview!!,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
                 )
             }
 
             Text(
                 text = "Release Date: " + uiState.movieDetail?.releaseDate,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }
